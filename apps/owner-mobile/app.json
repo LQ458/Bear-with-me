@@ -21,6 +21,9 @@
       "expo-notifications",
       "@livekit/react-native-expo-plugin",
       "@config-plugins/react-native-webrtc"
-    ]
+    ],
+    "extra": {
+      "apiBaseUrl": "https://bear-with-me-lq458s-projects.vercel.app"
+    }
   }
 }

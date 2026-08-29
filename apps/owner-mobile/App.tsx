@@ -7,7 +7,9 @@ import { InboxEvent, Item, Message, OwnerApi, registerOwner } from "./src/api";
 import { onNotificationOpened, registerForOwnerNotifications } from "./src/notifications";
 
 const API_BASE =
-  Constants.expoConfig?.extra?.apiBaseUrl ?? process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+  process.env.EXPO_PUBLIC_API_BASE_URL ??
+  Constants.expoConfig?.extra?.apiBaseUrl ??
+  "http://localhost:8000";
 
 export default function App() {
   const [session, setSession] = useState("");
