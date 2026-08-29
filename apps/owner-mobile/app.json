@@ -23,7 +23,7 @@
       "@config-plugins/react-native-webrtc"
     ],
     "extra": {
-      "apiBaseUrl": "https://bear-with-me-lq458s-projects.vercel.app"
+      "apiBaseUrl": "https://bear-with-me-five.vercel.app"
     }
   }
 }
