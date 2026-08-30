@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Whoops Tag — product demo</title>
+    <link rel="stylesheet" href="/finder/styles.css">
+    <style>
+      :root {
+        --demo-ink: #191918;
+        --demo-paper: #f5f1e9;
+        --demo-surface: #fffdf8;
+        --demo-line: #d8d0c2;
+        --demo-accent: #e36c43;
+        --demo-muted: #706b61;
+      }
+
+      body.demo-page {
+        background:
+          radial-gradient(circle at 82% 0%, rgba(227, 108, 67, .14), transparent 27rem),
+          var(--demo-paper);
+        color: var(--demo-ink);
+      }
+
+      .demo-shell {
+        width: min(1160px, calc(100vw - 56px));
+        margin: 0 auto;
+        padding: 28px 0 88px;
+      }
+
+      .demo-page .topbar {
+        padding-bottom: 20px;
+        border-color: rgba(25, 25, 24, .18);
+      }
+
+      .demo-page .nav-links { gap: 22px; }
+      .demo-page .nav-links a { font-size: .88rem; }
+      .demo-page .brand { font-size: .78rem; }
+      .demo-page .brand-mark { width: 31px; height: 31px; border-radius: 9px; }
+
+      .demo-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr);
+        gap: clamp(36px, 7vw, 96px);
+        align-items: end;
+        padding: 76px 0 54px;
+      }
+
+      .demo-page .eyebrow {
+        margin-bottom: 16px;
+        font-size: .72rem;
+        letter-spacing: .18em;
+      }
+
+      .demo-page h1 {
+        max-width: 760px;
+        font-size: clamp(3.4rem, 5.1vw, 5.25rem);
+        line-height: .88;
+      }
+
+      .demo-page .lede {
+        max-width: 620px;
+        margin-top: 24px;
+        font-size: 1.12rem;
+      }
+
+      .demo-proof {
+        padding: 25px;
+        border-radius: 20px;
+        color: var(--demo-paper);
+        background: var(--demo-ink);
+        box-shadow: 14px 16px 0 rgba(227, 108, 67, .22);
+      }
+
+      .demo-proof-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: #c7c2b8;
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+      }
+
+      .demo-proof-label span:last-child {
+        color: #8fd09f;
+        letter-spacing: .08em;
+      }
+
+      .demo-proof h2 {
+        margin-top: 24px;
+        color: var(--demo-paper);
+        font-size: 1.65rem;
+      }
+
+      .demo-proof ol {
+        display: grid;
+        gap: 13px;
+        margin: 22px 0 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: demo-step;
+      }
+
+      .demo-proof li {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 11px;
+        align-items: start;
+        color: #d7d1c7;
+        font-size: .91rem;
+        line-height: 1.35;
+        counter-increment: demo-step;
+      }
+
+      .demo-proof li::before {
+        content: counter(demo-step, decimal-leading-zero);
+        color: var(--demo-accent);
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: .72rem;
+        font-weight: 800;
+      }
+
+      .demo-launch {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 28px;
+        align-items: center;
+        margin: 0;
+        padding: 29px 32px;
+        border: 1px solid var(--demo-ink);
+        border-radius: 20px;
+        color: var(--demo-paper);
+        background: var(--demo-ink);
+      }
+
+      .demo-launch .eyebrow { color: #ef9c7d; }
+      .demo-launch h2 { color: var(--demo-paper); font-size: clamp(1.55rem, 3vw, 2.1rem); }
+      .demo-launch p:not(.eyebrow):not(.status-line) { max-width: 650px; margin: 9px 0 0; color: #c7c2b8; font-size: .98rem; }
+
+      .demo-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .demo-page .demo-actions button,
+      .demo-page .demo-actions a {
+        width: auto;
+        margin: 0;
+        border-radius: 11px;
+        padding: 13px 17px;
+        font-size: .88rem;
+        font-weight: 800;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .demo-page .demo-actions button {
+        border: 1px solid var(--demo-accent);
+        color: #2b1710;
+        background: var(--demo-accent);
+      }
+
+      .demo-page .demo-actions button:hover { background: #f18a65; }
+      .demo-page .demo-actions a {
+        border: 1px solid #5c5952;
+        color: var(--demo-paper);
+        background: transparent;
+      }
+
+      .demo-page .demo-actions a:hover { border-color: #aaa398; background: #2a2926; }
+      .demo-launch .status-line { grid-column: 1 / -1; min-height: 0; margin: 0; color: #efb19b; font-size: .86rem; }
+      .demo-launch .status-line:empty { display: none; }
+
+      .demo-section-heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 20px;
+        margin: 64px 0 18px;
+      }
+
+      .demo-section-heading h2 { font-size: clamp(1.65rem, 3vw, 2.25rem); }
+      .demo-section-heading p { margin: 0; color: var(--demo-muted); font-size: .9rem; }
+
+      .demo-flow {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+
+      .demo-flow article {
+        min-height: 172px;
+        padding: 21px;
+        border: 1px solid var(--demo-line);
+        border-radius: 16px;
+        background: rgba(255, 253, 248, .78);
+      }
+
+      .demo-flow b {
+        display: block;
+        margin-bottom: 27px;
+        color: var(--demo-accent);
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: .72rem;
+        letter-spacing: .12em;
+      }
+
+      .demo-flow h3 { font-size: 1.18rem; }
+      .demo-flow p { margin: 8px 0 0; color: var(--demo-muted); font-size: .9rem; line-height: 1.4; }
+
+      .demo-links {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+
+      .demo-links a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        min-height: 62px;
+        padding: 16px 18px;
+        border: 1px solid var(--demo-line);
+        border-radius: 13px;
+        color: var(--demo-ink);
+        background: rgba(255, 253, 248, .62);
+        font-size: .9rem;
+        font-weight: 750;
+        text-decoration: none;
+      }
+
+      .demo-links a::after { content: "↗"; color: var(--demo-accent); font-size: 1.2rem; }
+      .demo-links a:hover { border-color: var(--demo-accent); background: var(--demo-surface); }
+
+      .demo-reset {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-top: 54px;
+        padding-top: 18px;
+        border-top: 1px solid var(--demo-line);
+        color: var(--demo-muted);
+        font-size: .82rem;
+      }
+
+      .demo-reset button {
+        width: auto;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        color: var(--demo-muted);
+        background: transparent;
+        font-size: .82rem;
+        font-weight: 700;
+      }
+
+      .demo-reset button:hover { color: var(--accent-dark); background: transparent; transform: none; }
+      .demo-reset .status-line { min-height: 0; margin: 0; }
+      .demo-reset .status-line:empty { display: none; }
+      .demo-reset button { margin-left: auto; }
+
+      @media (max-width: 800px) {
+        .demo-shell { width: calc(100vw - 36px); padding-top: 18px; }
+        .demo-hero { grid-template-columns: 1fr; gap: 34px; padding: 55px 0 38px; }
+        .demo-launch { grid-template-columns: 1fr; gap: 20px; padding: 24px; }
+        .demo-actions { justify-content: flex-start; }
+        .demo-flow, .demo-links { grid-template-columns: 1fr; }
+        .demo-section-heading { display: block; margin-top: 48px; }
+        .demo-section-heading p { margin-top: 5px; }
+      }
+
+      @media (max-width: 520px) {
+        .demo-page .nav-links { gap: 10px 14px; }
+        .demo-page h1 { font-size: clamp(3.2rem, 17vw, 5rem); }
+        .demo-proof { box-shadow: 8px 9px 0 rgba(227, 108, 67, .22); }
+        .demo-actions { display: grid; }
+        .demo-page .demo-actions button, .demo-page .demo-actions a { width: 100%; text-align: center; }
+        .demo-reset { align-items: flex-start; flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body class="demo-page">
+    <main class="demo-shell">
+      <nav class="topbar" aria-label="Primary">
+        <a class="brand" href="/" aria-label="Whoops Tag home">
+          <span class="brand-mark">↗</span>
+          WHOOPS TAG
+          <span>PRODUCT DEMO</span>
+        </a>
+        <div class="nav-links">
+          <a href="/">Home</a>
+          <a href="/owner">Owner access</a>
+        </div>
+      </nav>
+
+      <header class="demo-hero">
+        <div>
+          <p class="eyebrow">PUBLIC PRODUCT DEMO · 2 MINUTES</p>
+          <h1>Return lost things, without the guesswork.</h1>
+          <p class="lede">See the finder-to-owner handoff live. Start with the tagged backpack, then add an item named Ducky in the Android app.</p>
+        </div>
+        <aside class="demo-proof" aria-label="Demo outline">
+          <div class="demo-proof-label"><span>LIVE WORKSPACE</span><span>● READY</span></div>
+          <h2>One short loop.</h2>
+          <ol>
+            <li>Open the anonymous finder page.</li>
+            <li>Report the tagged item and start a private chat.</li>
+            <li>Add Ducky from Android and see the confirmation.</li>
+          </ol>
+        </aside>
+      </header>
+
+      <section class="demo-launch" aria-labelledby="launch-title">
+        <div>
+          <p class="eyebrow">START HERE</p>
+          <h2 id="launch-title">Load the live demo workspace.</h2>
+          <p>One click prepares the owner session and reveals the current finder link. No account or setup required.</p>
+        </div>
+        <div class="demo-actions">
+          <button id="start-recording" type="button">Start live demo&nbsp; →</button>
+          <a id="recording-finder" class="hidden" target="_blank" rel="noreferrer">Open finder&nbsp; ↗</a>
+          <a href="/owner?mode=recording" target="_blank" rel="noreferrer">Open owner web&nbsp; ↗</a>
+        </div>
+        <p id="recording-status" class="status-line" aria-live="polite"></p>
+      </section>
+
+      <section aria-labelledby="flow-title">
+        <div class="demo-section-heading">
+          <h2 id="flow-title">The return loop</h2>
+          <p>Designed for the person who finds the item.</p>
+        </div>
+        <div class="demo-flow">
+          <article>
+            <b>01 / FIND</b>
+            <h3>Scan or open the tag</h3>
+            <p>The finder reaches a private return page, not an owner profile.</p>
+          </article>
+          <article>
+            <b>02 / REPORT</b>
+            <h3>Send a safe message</h3>
+            <p>A finder can report the item and choose a return conversation.</p>
+          </article>
+          <article>
+            <b>03 / RECOVER</b>
+            <h3>Coordinate the handoff</h3>
+            <p>The owner receives the report and replies without exposing contact details.</p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="explore-title">
+        <div class="demo-section-heading">
+          <h2 id="explore-title">Explore the surfaces</h2>
+          <p>Open any view in a new tab.</p>
+        </div>
+        <div class="demo-links">
+          <a href="/" target="_blank" rel="noreferrer">Product overview</a>
+          <a href="/f" target="_blank" rel="noreferrer">Finder entry</a>
+          <a href="/owner" target="_blank" rel="noreferrer">Owner registration</a>
+          <a href="/owner?mode=login" target="_blank" rel="noreferrer">Owner login</a>
+          <a href="/admin" target="_blank" rel="noreferrer">Admin workspace</a>
+          <a href="/authority" target="_blank" rel="noreferrer">Authority handoff</a>
+        </div>
+      </section>
+
+      <footer class="demo-reset">
+        <span>Browser-only sessions can be cleared without changing live data.</span>
+        <button id="reset-session" type="button">Reset browser session</button>
+        <span id="reset-status" class="status-line" aria-live="polite"></span>
+      </footer>
+    </main>
+    <script>
+      const startRecording = document.querySelector("#start-recording");
+      const recordingFinder = document.querySelector("#recording-finder");
+      const recordingStatus = document.querySelector("#recording-status");
+      startRecording.addEventListener("click", async () => {
+        startRecording.disabled = true;
+        try {
+          const response = await fetch("/api/recording/bootstrap");
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok || !body.finder_url) throw new Error(body.error || "Could not open the demo workspace");
+          recordingFinder.href = body.finder_url;
+          recordingFinder.classList.remove("hidden");
+          recordingStatus.textContent = "Workspace ready. Open the finder, report the item, and choose the owner chat prompt.";
+        } catch (error) {
+          recordingStatus.textContent = error.message;
+        } finally {
+          startRecording.disabled = false;
+        }
+      });
+
+      document.querySelector("#reset-session").addEventListener("click", () => {
+        for (const storage of [window.sessionStorage, window.localStorage]) {
+          for (const key of Object.keys(storage)) {
+            if (key === "owner_session" || key.startsWith("bwm:")) storage.removeItem(key);
+          }
+        }
+        recordingFinder.classList.add("hidden");
+        document.querySelector("#reset-status").textContent = "Browser session reset.";
+      });
+    </script>
+  </body>
+</html>

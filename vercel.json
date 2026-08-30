@@ -4,6 +4,12 @@
       "maxDuration": 30
     }
   },
+  "redirects": [
+    {
+      "source": "/recording",
+      "destination": "/demo"
+    }
+  ],
   "rewrites": [
     {
       "source": "/f/:path*",
