@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Whoops Tag — demo menu</title>
+    <title>Whoops Tag — live recording setup</title>
     <link rel="stylesheet" href="/finder/styles.css">
   </head>
   <body>
@@ -21,21 +21,21 @@
       </nav>
 
       <header class="page-intro">
-        <p class="eyebrow">BROWSER DEMO MENU</p>
-        <h1>Try every surface.</h1>
-        <p class="lede">Use this page to walk through the web experience without opening Xcode or the iOS simulator. Each link opens the real deployed route.</p>
+        <p class="eyebrow">LIVE RECORDING SETUP</p>
+        <h1>Record a return.</h1>
+        <p class="lede">Use this workspace to record the finder and owner experience with two tagged items and a live private chat.</p>
       </header>
 
-      <section class="card" id="live-demo">
+      <section class="card" id="live-recording">
         <p class="eyebrow">LIVE DATA / ONE CLICK</p>
-        <h2>Start with a connected account.</h2>
-        <p>Use the same persisted demo item from the finder website, owner web view, and Android app. Reports and messages are shared through the live service.</p>
+        <h2>Start with a connected owner.</h2>
+        <p>Use the two persisted items from the finder website, owner web view, and Android app. Reports and messages are shared through the live service.</p>
         <div class="actions">
-          <button id="start-demo" type="button">Start live demo</button>
-          <a id="demo-finder" class="hidden" target="_blank" rel="noreferrer">Open demo finder&nbsp; →</a>
-          <a href="/owner?mode=demo" target="_blank" rel="noreferrer">Open demo owner&nbsp; →</a>
+          <button id="start-recording" type="button">Open owner workspace</button>
+          <a id="recording-finder" class="hidden" target="_blank" rel="noreferrer">Open finder link&nbsp; →</a>
+          <a href="/owner?mode=recording" target="_blank" rel="noreferrer">Open owner view&nbsp; →</a>
         </div>
-        <p id="demo-status" class="status-line" aria-live="polite"></p>
+        <p id="recording-status" class="status-line" aria-live="polite"></p>
       </section>
 
 
@@ -107,22 +107,22 @@
       </section>
     </main>
     <script>
-      const startDemo = document.querySelector("#start-demo");
-      const demoFinder = document.querySelector("#demo-finder");
-      const demoStatus = document.querySelector("#demo-status");
-      startDemo.addEventListener("click", async () => {
-        startDemo.disabled = true;
+      const startRecording = document.querySelector("#start-recording");
+      const recordingFinder = document.querySelector("#recording-finder");
+      const recordingStatus = document.querySelector("#recording-status");
+      startRecording.addEventListener("click", async () => {
+        startRecording.disabled = true;
         try {
-          const response = await fetch("/api/demo/bootstrap");
+          const response = await fetch("/api/recording/bootstrap");
           const body = await response.json().catch(() => ({}));
-          if (!response.ok || !body.finder_url) throw new Error(body.error || "Could not start the live demo");
-          demoFinder.href = body.finder_url;
-          demoFinder.classList.remove("hidden");
-          demoStatus.textContent = "Live demo ready. Open the finder and owner views, then send a message.";
+          if (!response.ok || !body.finder_url) throw new Error(body.error || "Could not open the owner workspace");
+          recordingFinder.href = body.finder_url;
+          recordingFinder.classList.remove("hidden");
+          recordingStatus.textContent = "Workspace ready. Open the finder link, report the item, and choose the owner chat prompt.";
         } catch (error) {
-          demoStatus.textContent = error.message;
+          recordingStatus.textContent = error.message;
         } finally {
-          startDemo.disabled = false;
+          startRecording.disabled = false;
         }
       });
 
@@ -132,7 +132,7 @@
             if (key === "owner_session" || key.startsWith("bwm:")) storage.removeItem(key);
           }
         }
-        demoFinder.classList.add("hidden");
+        recordingFinder.classList.add("hidden");
         document.querySelector("#reset-status").textContent = "Browser session reset. Open a page above to start again.";
       });
     </script>

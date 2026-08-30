@@ -28,7 +28,13 @@ export type Message = {
 
 export type TagProvisioning = { tag_ref: string; item_ref: string; secret: string; human_code: string; finder_url: string };
 export type CallToken = { server_url: string; room: string; token: string };
-export type DemoBootstrap = { session_token: string; item_ref: string; label: string; finder_url: string };
+export type RecordingBootstrap = {
+  session_token: string;
+  items: Array<{ item_ref: string; label: string; finder_url: string }>;
+  item_ref: string;
+  label: string;
+  finder_url: string;
+};
 
 type Config = { baseUrl: string; sessionToken: string };
 
@@ -133,14 +139,14 @@ export async function consumeMagicLink(baseUrl: string, token: string): Promise<
   return { token: body.session_token };
 }
 
-export async function bootstrapDemo(baseUrl: string): Promise<DemoBootstrap> {
-  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/api/demo/bootstrap`, {
+export async function bootstrapRecording(baseUrl: string): Promise<RecordingBootstrap> {
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/api/recording/bootstrap`, {
     method: "POST",
     headers: { Accept: "application/json", "Content-Type": "application/json" },
   });
-  const body = (await response.json().catch(() => ({}))) as DemoBootstrap & { error?: string };
+  const body = (await response.json().catch(() => ({}))) as RecordingBootstrap & { error?: string };
   if (!response.ok || !body.session_token || !body.finder_url) {
-    throw new Error(body.error || "Could not start the demo");
+    throw new Error(body.error || "Could not open the owner workspace");
   }
   return body;
 }

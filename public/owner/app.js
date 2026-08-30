@@ -6,6 +6,8 @@ let messageTimer = null;
 let refreshingMessages = false;
 let sendingMessage = false;
 const messageRefs = new Set();
+const seenFoundRefs = new Set();
+let inboxInitialized = false;
 const byId = (id) => document.getElementById(id);
 
 function status(text, error = false) {
@@ -30,8 +32,12 @@ async function api(path, options = {}) {
 
 async function loadInbox() {
   const body = await api("/owner/inbox");
+  const freshEvents = inboxInitialized
+    ? body.events.filter((event) => !seenFoundRefs.has(event.found_ref))
+    : [];
+  for (const event of body.events) seenFoundRefs.add(event.found_ref);
+  inboxInitialized = true;
   const events = byId("events");
-  events.replaceChildren();
   if (!body.events.length) {
     const empty = document.createElement("p");
     empty.className = "muted";
@@ -51,6 +57,12 @@ async function loadInbox() {
     button.addEventListener("click", () => openChat(event));
     card.append(title, text, button);
     events.append(card);
+  }
+  if (freshEvents.length) {
+    const event = freshEvents[0];
+    if (window.confirm(`${event.label} was just found.\n\nWanna join chat?`)) {
+      openChat(event);
+    }
   }
 }
 
@@ -319,25 +331,27 @@ byId("logout").addEventListener("click", () => {
   token = "";
   selected = null;
   sessionStorage.removeItem("owner_session");
+  seenFoundRefs.clear();
+  inboxInitialized = false;
   if (inboxTimer) window.clearInterval(inboxTimer);
   if (messageTimer) window.clearInterval(messageTimer);
   showLogin();
   status("Owner session closed.");
 });
 
-const demoMode = new URLSearchParams(window.location.search).get("mode") === "demo";
+const recordingMode = new URLSearchParams(window.location.search).get("mode") === "recording";
 
-async function startDemo() {
-  const response = await fetch("/api/demo/bootstrap");
+async function startRecording() {
+  const response = await fetch("/api/recording/bootstrap");
   const body = await response.json().catch(() => ({}));
-  if (!response.ok || !body.session_token) throw new Error(body.error || "Could not start the live demo");
+  if (!response.ok || !body.session_token) throw new Error(body.error || "Could not open the owner workspace");
   token = body.session_token;
   sessionStorage.setItem("owner_session", token);
   await showDashboard();
 }
 
-if (demoMode) {
-  startDemo().catch((error) => {
+if (recordingMode) {
+  startRecording().catch((error) => {
     showLogin();
     status(error.message, true);
   });

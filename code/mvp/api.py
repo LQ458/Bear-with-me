@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 from .config import Settings
 from .container import Services, create_services
-from .demo import bootstrap as bootstrap_demo
+from .demo import bootstrap as bootstrap_recording
 from .errors import (
     AuthenticationError,
     AuthorizationError,
@@ -156,9 +156,9 @@ def create_app(services: Services | None = None) -> FastAPI:
         )
 
 
-    @app.api_route("/api/demo/bootstrap", methods=["GET", "POST"])
-    def demo_bootstrap(services: Services = Depends(svc)):
-        return bootstrap_demo(services)
+    @app.api_route("/api/recording/bootstrap", methods=["GET", "POST"])
+    def recording_bootstrap(services: Services = Depends(svc)):
+        return bootstrap_recording(services)
 
     @app.get("/api/f/{secret}")
     def open_finder_secret(request: Request, secret: str, services: Services = Depends(svc)):

@@ -141,28 +141,32 @@ def test_http_contract_carries_core_return_loop(services):
     assert messages.json()["messages"][0]["body"] == "It is safe at the desk."
 
 
-def test_demo_bootstrap_is_idempotent_and_uses_the_real_return_loop(services):
+def test_recording_bootstrap_is_idempotent_and_uses_the_real_return_loop(services):
     service, _ = services
     client = TestClient(create_app(service))
 
-    first = client.get("/api/demo/bootstrap")
-    second = client.post("/api/demo/bootstrap")
+    first = client.get("/api/recording/bootstrap")
+    second = client.post("/api/recording/bootstrap")
 
     assert first.status_code == 200
     assert second.status_code == 200
     first_body = first.json()
     second_body = second.json()
     assert first_body["finder_url"] == second_body["finder_url"]
-    assert first_body["label"] == "Demo return bottle"
+    assert [item["label"] for item in first_body["items"]] == [
+        "Blue water bottle",
+        "Black backpack",
+    ]
+    assert first_body["label"] == "Blue water bottle"
 
     owner_headers = {"Authorization": f"Bearer {first_body['session_token']}"}
     items = client.get("/api/items", headers=owner_headers)
     assert items.status_code == 200
     assert any(item["item_ref"] == first_body["item_ref"] for item in items.json()["items"])
 
-    finder = client.get("/api/f/whoopstag-demo-tag-2026")
+    finder = client.get("/api/f/whoopstag-blue-water-bottle-2026")
     assert finder.status_code == 200
-    assert finder.json()["label"] == "Demo return bottle"
+    assert finder.json()["label"] == "Blue water bottle"
 
 def test_short_code_requires_check_symbol_and_is_rate_limited(services):
     service, _ = services

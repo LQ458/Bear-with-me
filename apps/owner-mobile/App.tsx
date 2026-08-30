@@ -3,7 +3,7 @@ import { Alert, FlatList, Platform, Pressable, SafeAreaView, Share, StyleSheet, 
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import { CallRoom } from "./src/CallRoom";
-import { InboxEvent, Item, Message, OwnerApi, bootstrapDemo, consumeMagicLink, registerOwner, requestMagicLink } from "./src/api";
+import { InboxEvent, Item, Message, OwnerApi, bootstrapRecording, consumeMagicLink, registerOwner, requestMagicLink } from "./src/api";
 import { onNotificationOpened, registerForOwnerNotifications } from "./src/notifications";
 
 const API_BASE =
@@ -62,20 +62,33 @@ export default function App() {
   const api = useMemo(() => (session ? new OwnerApi({ baseUrl: API_BASE, sessionToken: session }) : null), [session]);
 
   const knownInboxRefs = useRef<Set<string>>(new Set());
+  const inboxInitialized = useRef(false);
 
   useEffect(() => {
     let active = true;
     void SecureStore.getItemAsync("owner_session")
       .then(async (stored) => {
         if (stored) {
-          if (active) setSession(stored);
-          return;
+          try {
+            await new OwnerApi({ baseUrl: API_BASE, sessionToken: stored }).listItems();
+            const savedLinks = await SecureStore.getItemAsync("recording_links");
+            if (active) {
+              if (savedLinks) setTagLinks(JSON.parse(savedLinks) as Record<string, string>);
+              setSession(stored);
+            }
+            return;
+          } catch {
+            await SecureStore.deleteItemAsync("owner_session");
+            await SecureStore.deleteItemAsync("recording_links");
+          }
         }
-        const demo = await bootstrapDemo(API_BASE);
+        const recording = await bootstrapRecording(API_BASE);
         if (!active) return;
-        await SecureStore.setItemAsync("owner_session", demo.session_token);
-        setTagLinks({ [demo.item_ref]: demo.finder_url });
-        setSession(demo.session_token);
+        const links = Object.fromEntries(recording.items.map((item) => [item.item_ref, item.finder_url]));
+        await SecureStore.setItemAsync("owner_session", recording.session_token);
+        await SecureStore.setItemAsync("recording_links", JSON.stringify(links));
+        setTagLinks(links);
+        setSession(recording.session_token);
       })
       .catch(() => undefined)
       .finally(() => {
@@ -91,10 +104,15 @@ export default function App() {
     if (!api) return;
     const [nextItems, nextInbox] = await Promise.all([api.listItems(), api.inbox()]);
     const newEvents = nextInbox.filter((event) => !knownInboxRefs.current.has(event.found_ref));
-    if (knownInboxRefs.current.size && newEvents.length) {
-      Alert.alert("New found report", `${newEvents[0]?.label ?? "An item"} was reported found.`);
+    const [event] = newEvents;
+    if (inboxInitialized.current && event) {
+      Alert.alert("New found report", `${event.label} was just found.\n\nWanna join chat?`, [
+        { text: "Not now", style: "cancel" },
+        { text: "Join chat", onPress: () => setSelected(event) },
+      ]);
     }
     knownInboxRefs.current = new Set(nextInbox.map((event) => event.found_ref));
+    inboxInitialized.current = true;
     setItems(nextItems);
     setInbox(nextInbox);
   }
