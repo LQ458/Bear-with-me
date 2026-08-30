@@ -13,9 +13,9 @@ function pathTarget() {
   if (parts[0] !== "f") throw new Error("This finder link is incomplete.");
   if (!parts[1]) return null;
   if (parts[1] === "code" && parts[2]) {
-    return { endpoint: `/f/code/${encodeURIComponent(parts[2])}` };
+    return { endpoint: `/f/code/${encodeURIComponent(parts[2])}`, direct: false };
   }
-  return { endpoint: `/f/${encodeURIComponent(parts[1])}` };
+  return { endpoint: `/f/${encodeURIComponent(parts[1])}`, direct: true };
 }
 
 async function json(url, options = {}) {
@@ -49,6 +49,45 @@ async function refreshMessages() {
   }
 }
 
+function bindChat() {
+  if ($("message-form").dataset.bound) return;
+  $("message-form").dataset.bound = "true";
+  $("message-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const input = $("message");
+    try {
+      await json(`/finder/conversations/${encodeURIComponent(state.conversation)}/messages`, {
+        method: "POST",
+        headers: { "X-Finder-Session": state.session },
+        body: JSON.stringify({ body: input.value }),
+      });
+      input.value = "";
+      await refreshMessages();
+    } catch (error) {
+      setStatus(error.message, true);
+    }
+  });
+}
+
+async function openConversation(report) {
+  state.conversation = report.conversation_ref;
+  $("report").classList.add("hidden");
+  $("chat").classList.remove("hidden");
+  setStatus("You are connected. Tell the owner where the item is.");
+  bindChat();
+  await refreshMessages();
+  if (!state.timer) state.timer = window.setInterval(() => refreshMessages().catch(() => {}), 2500);
+}
+
+async function reportFound(place, note = "", authorityOrganization = "") {
+  const report = await json(`/f/sessions/${encodeURIComponent(state.session)}/found`, {
+    method: "POST",
+    body: JSON.stringify({ place, note, authority_organization: authorityOrganization }),
+  });
+  sessionStorage.setItem(`bwm:found:${window.location.pathname}`, JSON.stringify(report));
+  await openConversation(report);
+}
+
 async function start() {
   try {
     const target = pathTarget();
@@ -67,9 +106,19 @@ async function start() {
     sessionStorage.setItem(`bwm:${target.endpoint}`, JSON.stringify(opened));
     state.session = opened.session_token;
     $("item-label").textContent = opened.label || "Found item";
-    $("report").classList.remove("hidden");
-    setStatus("Thanks for taking a moment to help.");
 
+    if (target.direct) {
+      const previousReport = sessionStorage.getItem(`bwm:found:${window.location.pathname}`);
+      if (previousReport) {
+        await openConversation(JSON.parse(previousReport));
+      } else {
+        await reportFound("Still with me");
+      }
+      return;
+    }
+
+    $("report").classList.remove("hidden");
+    setStatus("Add the location, then you will go straight to private chat.");
     $("authority").addEventListener("change", () => {
       $("organization").classList.toggle("hidden", !$("authority").checked);
       $("organization").required = $("authority").checked;
@@ -77,35 +126,11 @@ async function start() {
     $("report-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       try {
-        const report = await json(`/f/sessions/${encodeURIComponent(state.session)}/found`, {
-          method: "POST",
-          body: JSON.stringify({
-            place: $("place").value,
-            note: $("note").value,
-            authority_organization: $("authority").checked ? $("organization").value : "",
-          }),
-        });
-        state.conversation = report.conversation_ref;
-        $("report").classList.add("hidden");
-        $("chat").classList.remove("hidden");
-        setStatus("The owner has been notified. You can leave a message below.");
-        await refreshMessages();
-        state.timer = window.setInterval(() => refreshMessages().catch(() => {}), 2500);
-      } catch (error) {
-        setStatus(error.message, true);
-      }
-    });
-    $("message-form").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const input = $("message");
-      try {
-        await json(`/finder/conversations/${encodeURIComponent(state.conversation)}/messages`, {
-          method: "POST",
-          headers: { "X-Finder-Session": state.session },
-          body: JSON.stringify({ body: input.value }),
-        });
-        input.value = "";
-        await refreshMessages();
+        await reportFound(
+          $("place").value,
+          $("note").value,
+          $("authority").checked ? $("organization").value : "",
+        );
       } catch (error) {
         setStatus(error.message, true);
       }

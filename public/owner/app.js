@@ -151,8 +151,20 @@ async function showDashboard() {
   status("Owner browser fallback is ready. The native app uses the same account and API.");
 }
 
-byId("register").addEventListener("click", async () => {
-  const button = byId("register");
+function setAuthMode(mode) {
+  const registering = mode === "register";
+  byId("register-form").classList.toggle("hidden", !registering);
+  byId("login-form").classList.toggle("hidden", registering);
+  byId("register-tab").setAttribute("aria-selected", String(registering));
+  byId("login-tab").setAttribute("aria-selected", String(!registering));
+}
+
+byId("register-tab").addEventListener("click", () => setAuthMode("register"));
+byId("login-tab").addEventListener("click", () => setAuthMode("login"));
+
+byId("register-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = event.submitter;
   button.disabled = true;
   try {
     const response = await fetch("/api/auth/register", {
@@ -162,6 +174,48 @@ byId("register").addEventListener("click", async () => {
     });
     const body = await response.json();
     if (!response.ok || !body.session_token) throw new Error(body.error || "Registration failed");
+    token = body.session_token;
+    sessionStorage.setItem("owner_session", token);
+    await showDashboard();
+  } catch (error) {
+    status(error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+byId("request-login").addEventListener("click", async () => {
+  const button = byId("request-login");
+  button.disabled = true;
+  try {
+    const response = await fetch("/api/auth/magic-link/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: byId("login-email").value }),
+    });
+    const body = await response.json();
+    if (!response.ok || !body.token) throw new Error(body.error || "Could not send magic link");
+    byId("magic-token").value = body.token;
+    byId("login-step").classList.remove("hidden");
+    status("Demo magic link ready. Continue to open the owner account.");
+  } catch (error) {
+    status(error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+byId("complete-login").addEventListener("click", async () => {
+  const button = byId("complete-login");
+  button.disabled = true;
+  try {
+    const response = await fetch("/api/auth/magic-link/consume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: byId("magic-token").value }),
+    });
+    const body = await response.json();
+    if (!response.ok || !body.session_token) throw new Error(body.error || "Could not sign in");
     token = body.session_token;
     sessionStorage.setItem("owner_session", token);
     await showDashboard();

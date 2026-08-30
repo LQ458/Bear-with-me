@@ -8,14 +8,38 @@
   </head>
   <body>
     <main class="shell">
-      <p class="eyebrow">OWNER WEB FALLBACK</p>
-      <h1>Your lost items</h1>
-      <section id="login" class="card">
-        <label for="name">Name</label>
-        <input id="name" required>
-        <label for="email">Email</label>
-        <input id="email" type="email" required>
-        <button id="register">Open owner account</button>
+      <nav class="topbar" aria-label="Primary">
+        <a class="brand" href="/"><span class="brand-mark">↗</span>BEAR WITH ME<span>RETURN SYSTEM</span></a>
+        <div class="nav-links"><a href="/f">Finder</a><a href="/authority">Authority</a></div>
+      </nav>
+      <header class="page-intro">
+        <p class="eyebrow">OWNER ACCESS</p>
+        <h1>Your things, quietly findable.</h1>
+        <p class="lede">Register or log in to manage tags and receive private recovery messages.</p>
+      </header>
+      <section id="login" class="card auth-card">
+        <div class="auth-tabs" role="tablist" aria-label="Owner access">
+          <button id="register-tab" type="button" aria-selected="true">Register</button>
+          <button id="login-tab" type="button" aria-selected="false">Log in</button>
+        </div>
+        <form id="register-form">
+          <label for="name">Name</label>
+          <input id="name" required>
+          <label for="email">Email</label>
+          <input id="email" type="email" required>
+          <button>Open owner account</button>
+        </form>
+        <form id="login-form" class="hidden">
+          <label for="login-email">Email</label>
+          <input id="login-email" type="email" autocomplete="email" required>
+          <p class="muted">A magic link keeps owner contact details private. Demo tokens appear below.</p>
+          <button id="request-login" type="button">Send magic link</button>
+          <div id="login-step" class="hidden">
+            <label for="magic-token">Demo magic link token</label>
+            <input id="magic-token" autocomplete="one-time-code" required>
+            <button id="complete-login" type="button">Continue to owner account</button>
+          </div>
+        </form>
       </section>
       <section id="dashboard" class="hidden">
         <div class="card">

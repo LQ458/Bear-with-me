@@ -3,26 +3,74 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Bear With Me — reunite lost things</title>
+    <title>Bear With Me — private lost-item recovery</title>
     <link rel="stylesheet" href="/finder/styles.css">
-    <style>
-      a { color: #2f5d9e; font-weight: 700; }
-      .actions { display: grid; gap: 12px; }
-      .actions a { display: block; background: #f1f5f8; border-radius: 10px; padding: 14px; text-decoration: none; }
-      .actions a:hover { background: #e5edf4; }
-    </style>
   </head>
   <body>
     <main class="shell">
-      <p class="eyebrow">BEAR WITH ME</p>
-      <h1>Reunite lost things without exposing identity.</h1>
-      <p class="muted">A finder can report an item, the owner can receive a private notification, and both sides can chat anonymously.</p>
-      <section class="card actions">
-        <a href="/f">Found something? Open the finder page</a>
-        <a href="/owner">Open the owner web fallback</a>
-        <a href="/authority">Open the authority recovery portal</a>
-        <a href="/admin">Open the platform admin invitation page</a>
+      <nav class="topbar" aria-label="Primary">
+        <a class="brand" href="/" aria-label="Bear With Me home">
+          <span class="brand-mark">↗</span>
+          BEAR WITH ME
+          <span>RETURN SYSTEM</span>
+        </a>
+        <div class="nav-links">
+          <a href="/f">Finder</a>
+          <a href="/owner">Owner access</a>
+          <a href="/authority">Authority</a>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">PRIVATE RECOVERY, HUMAN SCALE</p>
+          <h1 class="display">Lost things should find their way home.</h1>
+          <p class="lede">A quiet return system for campuses. Scan a tag, send a note, and help an owner recover what matters without exposing anyone’s identity.</p>
+          <div class="hero-actions">
+            <a href="/f">I found something&nbsp; →</a>
+            <a href="/owner">I own a tagged item&nbsp; →</a>
+          </div>
+          <div class="signal-line">
+            <span><i class="status-dot"></i>Anonymous by default</span>
+            <span>No app required to help</span>
+          </div>
+        </div>
+        <div class="hero-art" role="img" aria-label="A recovery tag connected to a private conversation">
+          <div class="orbit"></div>
+          <div class="tag-card">
+            <small>Return tag / active</small>
+            <strong>Found<br>something?</strong>
+            <p>One tap starts a private line to the owner.</p>
+            <div class="code-line">BWM / 08—24—NOW</div>
+          </div>
+        </div>
       </section>
+
+      <section class="trust-strip" aria-label="How it works">
+        <article><b>01</b><span>Find a tag on an item and open its private return page.</span></article>
+        <article><b>02</b><span>Tell the owner where it is. No account or contact details required.</span></article>
+        <article><b>03</b><span>Chat until the handoff is complete, with identity kept out of view.</span></article>
+      </section>
+
+      <section class="portal-grid" aria-label="Recovery portals">
+        <article class="card">
+          <div>
+            <p class="eyebrow">FOR OWNERS</p>
+            <h2>Keep a private inventory.</h2>
+            <p>Register or log in to add your items, provision tags, and receive found reports.</p>
+          </div>
+          <a href="/owner">Open owner access&nbsp; →</a>
+        </article>
+        <article class="card">
+          <div>
+            <p class="eyebrow">FOR RECOVERY TEAMS</p>
+            <h2>Move property safely.</h2>
+            <p>Invite an authority partner and record custody without revealing the owner’s identity.</p>
+          </div>
+          <a href="/authority">Open authority portal&nbsp; →</a>
+        </article>
+      </section>
+      <p class="muted status-line">Built for the moment after “I found it” and before “it’s back with you.”</p>
     </main>
   </body>
 </html>

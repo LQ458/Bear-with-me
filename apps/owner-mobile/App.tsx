@@ -3,13 +3,15 @@ import { Alert, Button, FlatList, Platform, SafeAreaView, StyleSheet, Text, Text
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import { CallRoom } from "./src/CallRoom";
-import { InboxEvent, Item, Message, OwnerApi, registerOwner } from "./src/api";
+import { InboxEvent, Item, Message, OwnerApi, consumeMagicLink, registerOwner, requestMagicLink } from "./src/api";
 import { onNotificationOpened, registerForOwnerNotifications } from "./src/notifications";
 
 const API_BASE =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   Constants.expoConfig?.extra?.apiBaseUrl ??
   "http://localhost:8000";
+
+type AuthMode = "register" | "login";
 
 export default function App() {
   const [session, setSession] = useState("");
@@ -25,6 +27,9 @@ export default function App() {
   const [call, setCall] = useState<{ server_url: string; token: string } | null>(null);
   const [tagCodes, setTagCodes] = useState<Record<string, string>>({});
   const [ready, setReady] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>("register");
+  const [loginToken, setLoginToken] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
   const [notificationStatus, setNotificationStatus] = useState("Notifications are not registered yet.");
   const api = useMemo(() => (session ? new OwnerApi({ baseUrl: API_BASE, sessionToken: session }) : null), [session]);
 
@@ -99,6 +104,28 @@ export default function App() {
     }
   }
 
+  async function requestLogin() {
+    try {
+      const result = await requestMagicLink(API_BASE, email);
+      setLoginToken(result.token);
+      setAuthMessage("Demo magic link ready. Tap Continue to sign in.");
+    } catch (error) {
+      Alert.alert("Could not send magic link", (error as Error).message);
+    }
+  }
+
+  async function finishLogin() {
+    try {
+      const result = await consumeMagicLink(API_BASE, loginToken);
+      await SecureStore.setItemAsync("owner_session", result.token);
+      setSession(result.token);
+      setLoginToken("");
+      setAuthMessage("");
+    } catch (error) {
+      Alert.alert("Could not sign in", (error as Error).message);
+    }
+  }
+
   async function addItem() {
     if (!api || !newLabel.trim()) return;
     try {
@@ -151,10 +178,30 @@ export default function App() {
         <View style={styles.shell}>
           <Text style={styles.eyebrow}>BEAR WITH ME</Text>
           <Text style={styles.title}>Keep your things findable.</Text>
-          <Text style={styles.muted}>Register the owner account used for private notifications.</Text>
-          <TextInput style={styles.input} placeholder="Your name" value={name} onChangeText={setName} />
-          <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
-          <Button title="Create owner account" onPress={() => void signUp()} />
+          <Text style={styles.muted}>Private owner access for your recovery inbox.</Text>
+          <View style={styles.authTabs}>
+            <Button title="Register" onPress={() => { setAuthMode("register"); setAuthMessage(""); }} />
+            <Button title="Log in" onPress={() => { setAuthMode("login"); setAuthMessage(""); }} />
+          </View>
+          {authMode === "register" ? (
+            <>
+              <TextInput style={styles.input} placeholder="Your name" value={name} onChangeText={setName} />
+              <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
+              <Button title="Create owner account" onPress={() => void signUp()} />
+            </>
+          ) : (
+            <>
+              <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
+              <Button title="Send magic link" onPress={() => void requestLogin()} />
+              {authMessage ? <Text style={styles.muted}>{authMessage}</Text> : null}
+              {loginToken ? (
+                <>
+                  <TextInput style={styles.input} placeholder="Magic link token" autoCapitalize="none" value={loginToken} onChangeText={setLoginToken} />
+                  <Button title="Continue to owner account" onPress={() => void finishLogin()} />
+                </>
+              ) : null}
+            </>
+          )}
         </View>
       </SafeAreaView>
     );
@@ -240,6 +287,7 @@ export default function App() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#eef3f7" },
   shell: { width: "100%", maxWidth: 720, alignSelf: "center", padding: 22, gap: 12 },
+  authTabs: { flexDirection: "row", gap: 8, marginVertical: 8 },
   eyebrow: { color: "#2f5d9e", fontWeight: "700", letterSpacing: 2 },
   title: { fontSize: 31, fontWeight: "800", color: "#15202b" },
   section: { fontSize: 20, fontWeight: "700", color: "#15202b", marginTop: 18 },

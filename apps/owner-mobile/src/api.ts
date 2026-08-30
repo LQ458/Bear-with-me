@@ -110,3 +110,24 @@ export async function registerOwner(baseUrl: string, email: string, name: string
   if (!response.ok || !body.session_token) throw new Error(body.error || "Registration failed");
   return { token: body.session_token };
 }
+export async function requestMagicLink(baseUrl: string, email: string): Promise<{ token: string }> {
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/api/auth/magic-link/request`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const body = (await response.json().catch(() => ({}))) as { token?: string; error?: string };
+  if (!response.ok || !body.token) throw new Error(body.error || "Could not send magic link");
+  return { token: body.token };
+}
+
+export async function consumeMagicLink(baseUrl: string, token: string): Promise<{ token: string }> {
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/api/auth/magic-link/consume`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  const body = (await response.json().catch(() => ({}))) as { session_token?: string; error?: string };
+  if (!response.ok || !body.session_token) throw new Error(body.error || "Could not sign in");
+  return { token: body.session_token };
+}
