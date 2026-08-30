@@ -26,7 +26,7 @@ fi
 
 if [[ "${WHOOPSTAG_CONFIRM_RESET:-}" != "1" ]]; then
   printf 'This clears production chat history, found reports, notifications, and finder sessions.\n'
-  printf 'It keeps the two owner items and restores them to active.\n'
+  printf 'It keeps the tagged Black backpack, removes added test items, and restores the baseline to active.\n'
   printf 'Type RESET_RECORDING to continue: '
   read -r confirmation
   [[ "$confirmation" == "RESET_RECORDING" ]] || {
@@ -63,12 +63,12 @@ postgres_url = urlunsplit(parts._replace(
 with psycopg.connect(postgres_url) as connection:
     with connection.transaction():
         row = connection.execute(
-            "SELECT owner_ref FROM demo_records WHERE demo_key=%s LIMIT 1",
-            ("recording-water-bottle",),
+            "SELECT owner_ref,item_ref FROM demo_records WHERE demo_key=%s LIMIT 1",
+            ("recording-black-backpack",),
         ).fetchone()
         if not row:
-            raise SystemExit("recording owner was not found")
-        owner_ref = row[0]
+            raise SystemExit("recording owner baseline was not found")
+        owner_ref,keep_item_ref = row
         connection.execute("DELETE FROM notifications WHERE owner_ref=%s", (owner_ref,))
         connection.execute(
             "DELETE FROM messages WHERE conversation_ref IN "
@@ -83,8 +83,21 @@ with psycopg.connect(postgres_url) as connection:
             "(SELECT item_ref FROM items WHERE owner_ref=%s))",
             (owner_ref,),
         )
-        connection.execute("UPDATE items SET status=%s WHERE owner_ref=%s", ("active", owner_ref))
+        connection.execute(
+            "DELETE FROM demo_records WHERE owner_ref=%s AND item_ref<>%s",
+            (owner_ref,keep_item_ref),
+        )
+        connection.execute(
+            "DELETE FROM tags WHERE item_ref IN "
+            "(SELECT item_ref FROM items WHERE owner_ref=%s AND item_ref<>%s)",
+            (owner_ref,keep_item_ref),
+        )
+        connection.execute(
+            "DELETE FROM items WHERE owner_ref=%s AND item_ref<>%s",
+            (owner_ref,keep_item_ref),
+        )
+        connection.execute("UPDATE items SET status=%s WHERE item_ref=%s", ("active",keep_item_ref))
         print("Production recording data reset.")
 '
 
-printf 'Done. The recording workspace is clean and both items are active.\n'
+printf 'Done. The baseline Black backpack is active and added test items are removed.\n'
