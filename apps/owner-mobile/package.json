@@ -7,7 +7,8 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "build": "eas build"
+    "build": "eas build",
+    "build:normal": "bash scripts/build-normal-apk.sh"
   },
   "dependencies": {
     "expo": "^53.0.0",
