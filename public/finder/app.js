@@ -117,7 +117,7 @@ async function start() {
       return;
     }
     const existing = sessionStorage.getItem(`bwm:${target.endpoint}`);
-    const opened = existing ? JSON.parse(existing) : await json(target.endpoint);
+    const opened = target.direct ? await json(target.endpoint) : existing ? JSON.parse(existing) : await json(target.endpoint);
     sessionStorage.setItem(`bwm:${target.endpoint}`, JSON.stringify(opened));
     state.session = opened.session_token;
     $("item-label").textContent = opened.label || "Found item";
@@ -125,10 +125,17 @@ async function start() {
     if (target.direct) {
       const previousReport = sessionStorage.getItem(`bwm:found:${window.location.pathname}`);
       if (previousReport) {
-        await openConversation(JSON.parse(previousReport));
-      } else {
-        await reportFound("Still with me");
+        try {
+          await openConversation(JSON.parse(previousReport));
+          return;
+        } catch {
+          sessionStorage.removeItem(`bwm:found:${window.location.pathname}`);
+          state.messageRefs.clear();
+          state.lastMessage = "";
+          state.conversation = "";
+        }
       }
+      await reportFound("Still with me");
       return;
     }
 
