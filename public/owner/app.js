@@ -175,6 +175,7 @@ function setAuthMode(mode) {
   byId("register-tab").setAttribute("aria-selected", String(registering));
   byId("login-tab").setAttribute("aria-selected", String(!registering));
 }
+if (new URLSearchParams(window.location.search).get("mode") === "login") setAuthMode("login");
 
 byId("register-tab").addEventListener("click", () => setAuthMode("register"));
 byId("login-tab").addEventListener("click", () => setAuthMode("login"));
