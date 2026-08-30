@@ -153,20 +153,17 @@ def test_recording_bootstrap_is_idempotent_and_uses_the_real_return_loop(service
     first_body = first.json()
     second_body = second.json()
     assert first_body["finder_url"] == second_body["finder_url"]
-    assert [item["label"] for item in first_body["items"]] == [
-        "Ducky",
-        "Black backpack",
-    ]
-    assert first_body["label"] == "Ducky"
+    assert [item["label"] for item in first_body["items"]] == ["Black backpack"]
+    assert first_body["label"] == "Black backpack"
 
     owner_headers = {"Authorization": f"Bearer {first_body['session_token']}"}
     items = client.get("/api/items", headers=owner_headers)
     assert items.status_code == 200
     assert any(item["item_ref"] == first_body["item_ref"] for item in items.json()["items"])
 
-    finder = client.get("/api/f/wt_7YpK2mQ9xV4rN8cL5hD3sF6aJ0uB")
+    finder = client.get("/api/f/wt_R4nX8cM2vK7qP5zL9dH3fT6sW1aE")
     assert finder.status_code == 200
-    assert finder.json()["label"] == "Ducky"
+    assert finder.json()["label"] == "Black backpack"
 
 def test_short_code_requires_check_symbol_and_is_rate_limited(services):
     service, _ = services

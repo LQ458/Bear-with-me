@@ -10,12 +10,6 @@ RECORDING_EMAIL = "recording@whoopstag.app"
 RECORDING_NAME = "Whoops Tag Owner"
 RECORDING_ITEMS = (
     (
-        "recording-water-bottle",
-        "Ducky",
-        "A duck-themed item with a Whoops Tag attached.",
-        "wt_7YpK2mQ9xV4rN8cL5hD3sF6aJ0uB",
-    ),
-    (
         "recording-black-backpack",
         "Black backpack",
         "A black backpack with a Whoops Tag attached.",

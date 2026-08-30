@@ -215,8 +215,9 @@ export default function App() {
   async function addItem() {
     if (!api || !newLabel.trim()) return;
     try {
-      await api.createItem(newLabel.trim());
+      const item = await api.createItem(newLabel.trim());
       setNewLabel("");
+      Alert.alert("Item added", `${item.label} is now in your inventory.`);
       await refresh();
     } catch (error) {
       Alert.alert("Could not add item", (error as Error).message);
