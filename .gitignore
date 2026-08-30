@@ -13,3 +13,7 @@ __pycache__/
 .vercel
 .env*
 supabase/.temp/
+apps/owner-mobile/node_modules/
+apps/owner-mobile/.expo/
+apps/owner-mobile/dist/
+apps/owner-mobile/ios/
