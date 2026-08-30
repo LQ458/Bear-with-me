@@ -61,13 +61,21 @@ async function provisionTag(item, button, result) {
     result.replaceChildren();
     result.className = "muted";
     result.append("Tag ready · ");
-    const link = document.createElement("a");
-    link.href = tag.finder_url;
-    link.target = "_blank";
-    link.rel = "noreferrer";
-    link.textContent = "Open finder page";
-    result.append(link);
-    status(`Tag ready for ${item.label}. Open the finder page in a second browser tab.`);
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "link-button";
+    copy.textContent = "Copy finder link";
+    copy.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(tag.finder_url);
+        copy.textContent = "Finder link copied";
+        status(`Tag ready for ${item.label}.`);
+      } catch (error) {
+        status(`Could not copy the finder link: ${error.message}`, true);
+      }
+    });
+    result.append(copy);
+    status(`Tag ready for ${item.label}. Copy the finder link into your NFC or QR label tool.`);
   } catch (error) {
     status(error.message, true);
   } finally {

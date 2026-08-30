@@ -208,6 +208,8 @@ button:disabled { cursor: wait; opacity: .55; transform: none; }
 .portal-grid .card { display: flex; flex-direction: column; justify-content: space-between; margin: 0; }
 .portal-grid p { color: var(--muted); }
 .portal-grid a { display: inline-block; margin-top: 24px; color: var(--accent-dark); font-weight: 750; text-decoration: none; }
+.link-button { width: auto; margin: 0; padding: 0; border: 0; color: var(--accent-dark); background: transparent; font-size: inherit; font-weight: 750; cursor: pointer; }
+.link-button:hover { color: var(--ink); background: transparent; transform: none; }
 .check { display: flex; align-items: center; gap: 10px; font-weight: 500; }
 .check input { width: auto; }
 @media (max-width: 760px) {
