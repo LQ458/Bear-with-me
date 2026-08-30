@@ -56,13 +56,18 @@ export default function App() {
         return api.registerDevice(pushToken, Platform.OS === "ios" ? "ios" : "android");
       })
       .catch((error: Error) => setNotificationStatus(`Notifications unavailable: ${error.message}`));
-    return onNotificationOpened((data) => {
+    const unsubscribe = onNotificationOpened((data) => {
       void api.inbox().then((latest) => {
         setInbox(latest);
         const event = latest.find((candidate) => candidate.conversation_ref === data.conversation_ref);
         if (event) setSelected(event);
       }).catch(() => undefined);
     });
+    const timer = setInterval(() => void refresh().catch(() => undefined), 5000);
+    return () => {
+      unsubscribe();
+      clearInterval(timer);
+    };
   }, [api]);
 
   useEffect(() => {
