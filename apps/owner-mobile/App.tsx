@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, FlatList, Platform, Pressable, SafeAreaView, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
-import { CallRoom } from "./src/CallRoom";
 import { InboxEvent, Item, Message, OwnerApi, bootstrapRecording, consumeMagicLink, registerOwner, requestMagicLink } from "./src/api";
 import { onNotificationOpened, registerForOwnerNotifications } from "./src/notifications";
 
@@ -52,7 +51,6 @@ export default function App() {
   const messageRefs = useRef<Set<string>>(new Set());
   const sendingMessage = useRef(false);
   const [newLabel, setNewLabel] = useState("");
-  const [call, setCall] = useState<{ server_url: string; token: string } | null>(null);
   const [tagLinks, setTagLinks] = useState<Record<string, string>>({});
   const [ready, setReady] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("register");
@@ -241,15 +239,6 @@ export default function App() {
     }
   }
 
-  async function startCall() {
-    if (!api || !selected) return;
-    try {
-      const token = await api.callToken(selected.conversation_ref);
-      setCall({ server_url: token.server_url, token: token.token });
-    } catch (error) {
-      Alert.alert("Calling is unavailable", (error as Error).message);
-    }
-  }
   async function shareTagUrl(url: string) {
     try {
       await Share.share({ message: url });
@@ -278,7 +267,6 @@ export default function App() {
   }
 
   if (!ready) return <SafeAreaView style={styles.safe}><Text style={styles.muted}>Loading owner session…</Text></SafeAreaView>;
-  if (call) return <CallRoom serverUrl={call.server_url} token={call.token} onEnd={() => setCall(null)} />;
 
   if (!session) {
     return (
@@ -368,7 +356,6 @@ export default function App() {
                 />
                 <View style={styles.row}>
                   <ActionButton title="Send" onPress={() => void send()} />
-                  <ActionButton title="Call" tone="quiet" onPress={() => void startCall()} />
                 </View>
               </View>
             )}

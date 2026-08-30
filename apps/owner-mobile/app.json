@@ -8,20 +8,13 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.bearwithme.owner",
-      "infoPlist": {
-        "NSMicrophoneUsageDescription": "Whoops Tag uses the microphone only during an owner-approved return call."
-      }
+      "bundleIdentifier": "com.bearwithme.owner"
     },
     "android": {
-      "package": "com.bearwithme.owner",
-      "permissions": ["RECORD_AUDIO"]
+      "package": "com.bearwithme.owner"
     },
     "plugins": [
-      "expo-notifications",
-      "@livekit/react-native-expo-plugin",
-      "@config-plugins/react-native-webrtc",
-      "expo-asset"
+      "expo-notifications"
     ],
     "extra": {
       "apiBaseUrl": "https://whoops-tag.vercel.app"

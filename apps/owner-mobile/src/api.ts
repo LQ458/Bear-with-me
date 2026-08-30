@@ -27,7 +27,6 @@ export type Message = {
 };
 
 export type TagProvisioning = { tag_ref: string; item_ref: string; secret: string; human_code: string; finder_url: string };
-export type CallToken = { server_url: string; room: string; token: string };
 export type RecordingBootstrap = {
   session_token: string;
   items: Array<{ item_ref: string; label: string; finder_url: string }>;
@@ -85,11 +84,6 @@ export class OwnerApi {
     });
   }
 
-  async callToken(conversationRef: string): Promise<CallToken> {
-    return this.request<CallToken>(`/owner/conversations/${encodeURIComponent(conversationRef)}/call-token`, {
-      method: "POST",
-    });
-  }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await fetch(`${this.config.baseUrl.replace(/\/$/, "")}/api${path}`, {
