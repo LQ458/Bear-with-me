@@ -11,8 +11,8 @@ RECORDING_NAME = "Whoops Tag Owner"
 RECORDING_ITEMS = (
     (
         "recording-water-bottle",
-        "Blue water bottle",
-        "A blue water bottle with a Whoops Tag attached.",
+        "Ducky",
+        "A duck-themed item with a Whoops Tag attached.",
         "wt_7YpK2mQ9xV4rN8cL5hD3sF6aJ0uB",
     ),
     (

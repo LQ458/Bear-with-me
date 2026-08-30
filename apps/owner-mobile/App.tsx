@@ -318,7 +318,7 @@ export default function App() {
             <View style={styles.row}>
               <TextInput
                 style={[styles.input, styles.flex]}
-                placeholder="Blue water bottle"
+                placeholder="Ducky"
                 value={newLabel}
                 onChangeText={setNewLabel}
               />
