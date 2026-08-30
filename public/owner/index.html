@@ -17,9 +17,23 @@
         <input id="email" type="email" required>
         <button id="register">Open owner account</button>
       </section>
-      <section id="dashboard" class="card hidden">
-        <h2>Found reports</h2>
-        <div id="events"></div>
+      <section id="dashboard" class="hidden">
+        <div class="card">
+          <button id="logout" type="button">Close owner account</button>
+          <h2>Found reports</h2>
+          <div id="events"></div>
+        </div>
+        <div class="card">
+          <h2>Inventory</h2>
+          <form id="item-form">
+            <label for="item-label">Item name</label>
+            <input id="item-label" placeholder="Blue water bottle" required>
+            <label for="item-description">Private description (optional)</label>
+            <input id="item-description" placeholder="Scratches near the cap">
+            <button>Add item</button>
+          </form>
+          <div id="items"></div>
+        </div>
       </section>
       <section id="chat" class="card hidden">
         <h2 id="chat-title">Anonymous chat</h2>
@@ -28,6 +42,8 @@
           <input id="message" maxlength="2000" placeholder="Reply anonymously" required>
           <button>Send</button>
         </form>
+        <button id="call-button" type="button">Start return call</button>
+        <p id="call-status" class="muted" aria-live="polite"></p>
       </section>
       <p id="status" class="muted" aria-live="polite"></p>
     </main>
