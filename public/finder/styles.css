@@ -24,6 +24,7 @@ body {
     var(--paper);
   font-size: 18px;
   line-height: 1.5;
+  overflow-x: hidden;
 }
 a { color: inherit; }
 .shell {
