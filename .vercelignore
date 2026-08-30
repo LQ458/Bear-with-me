@@ -1,0 +1,10 @@
+.git
+.vercel
+node_modules
+**/node_modules
+python
+**/.venv
+apps/owner-mobile/android
+apps/owner-mobile/ios
+apps/owner-mobile/.expo
+reports

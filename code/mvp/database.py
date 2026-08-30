@@ -64,6 +64,15 @@ CREATE TABLE IF NOT EXISTS tags (
 );
 CREATE INDEX IF NOT EXISTS idx_tags_item ON tags(item_ref, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_tags_status ON tags(status);
+CREATE TABLE IF NOT EXISTS demo_records (
+    demo_key TEXT PRIMARY KEY,
+    owner_ref TEXT NOT NULL REFERENCES users(user_ref) ON DELETE CASCADE,
+    item_ref TEXT NOT NULL REFERENCES items(item_ref) ON DELETE CASCADE,
+    tag_ref TEXT NOT NULL REFERENCES tags(tag_ref) ON DELETE CASCADE,
+    secret_ciphertext TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
 
 CREATE TABLE IF NOT EXISTS finder_sessions (
     session_hash TEXT PRIMARY KEY,

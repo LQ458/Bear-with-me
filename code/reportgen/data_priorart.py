@@ -1,4 +1,4 @@
-"""Verified source data for the Bear With Me prior-art and competitive report.
+"""Verified source data for the Whoops Tag prior-art and competitive report.
 
 Same discipline as `data.py` and `data_opportunistic.py`: every figure below was
 read out of the cited primary source by the lead agent or by a scout that opened

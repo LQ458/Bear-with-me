@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from .config import Settings
 from .container import Services, create_services
+from .demo import bootstrap as bootstrap_demo
 from .errors import (
     AuthenticationError,
     AuthorizationError,
@@ -92,7 +93,7 @@ class CallTokenResponse(BaseModel):
 def create_app(services: Services | None = None) -> FastAPI:
     if services is None:
         services = create_services(Settings.from_env())
-    app = FastAPI(title="Bear With Me MVP", version="0.1.0")
+    app = FastAPI(title="Whoops Tag", version="0.1.0")
     app.state.services = services
     app.state.rate_limiter = RateLimiter()
     app.add_middleware(
@@ -154,6 +155,10 @@ def create_app(services: Services | None = None) -> FastAPI:
             f"finder-code-value:{hash_token(human_code.upper())[:16]}", 10, 60
         )
 
+
+    @app.api_route("/api/demo/bootstrap", methods=["GET", "POST"])
+    def demo_bootstrap(services: Services = Depends(svc)):
+        return bootstrap_demo(services)
 
     @app.get("/api/f/{secret}")
     def open_finder_secret(request: Request, secret: str, services: Services = Depends(svc)):

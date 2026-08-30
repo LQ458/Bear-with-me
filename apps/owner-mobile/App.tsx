@@ -3,13 +3,13 @@ import { Alert, FlatList, Platform, Pressable, SafeAreaView, Share, StyleSheet, 
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import { CallRoom } from "./src/CallRoom";
-import { InboxEvent, Item, Message, OwnerApi, consumeMagicLink, registerOwner, requestMagicLink } from "./src/api";
+import { InboxEvent, Item, Message, OwnerApi, bootstrapDemo, consumeMagicLink, registerOwner, requestMagicLink } from "./src/api";
 import { onNotificationOpened, registerForOwnerNotifications } from "./src/notifications";
 
 const API_BASE =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   Constants.expoConfig?.extra?.apiBaseUrl ??
-  "http://localhost:8000";
+  "https://bear-with-me-five.vercel.app";
 
 type ActionButtonProps = {
   title: string;
@@ -58,23 +58,47 @@ export default function App() {
   const [authMode, setAuthMode] = useState<AuthMode>("register");
   const [loginToken, setLoginToken] = useState("");
   const [authMessage, setAuthMessage] = useState("");
-  const [notificationStatus, setNotificationStatus] = useState("Notifications are not registered yet.");
+  const [notificationStatus, setNotificationStatus] = useState("Live inbox refresh is active.");
   const api = useMemo(() => (session ? new OwnerApi({ baseUrl: API_BASE, sessionToken: session }) : null), [session]);
 
+  const knownInboxRefs = useRef<Set<string>>(new Set());
+
   useEffect(() => {
+    let active = true;
     void SecureStore.getItemAsync("owner_session")
-      .then((stored) => {
-        if (stored) setSession(stored);
+      .then(async (stored) => {
+        if (stored) {
+          if (active) setSession(stored);
+          return;
+        }
+        const demo = await bootstrapDemo(API_BASE);
+        if (!active) return;
+        await SecureStore.setItemAsync("owner_session", demo.session_token);
+        setTagLinks({ [demo.item_ref]: demo.finder_url });
+        setSession(demo.session_token);
       })
-      .finally(() => setReady(true));
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setReady(true);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
+
 
   async function refresh() {
     if (!api) return;
     const [nextItems, nextInbox] = await Promise.all([api.listItems(), api.inbox()]);
+    const newEvents = nextInbox.filter((event) => !knownInboxRefs.current.has(event.found_ref));
+    if (knownInboxRefs.current.size && newEvents.length) {
+      Alert.alert("New found report", `${newEvents[0]?.label ?? "An item"} was reported found.`);
+    }
+    knownInboxRefs.current = new Set(nextInbox.map((event) => event.found_ref));
     setItems(nextItems);
     setInbox(nextInbox);
   }
+
 
   useEffect(() => {
     if (!api) return;
@@ -82,13 +106,16 @@ export default function App() {
     void registerForOwnerNotifications()
       .then((pushToken) => {
         if (!pushToken) {
-          setNotificationStatus("System notifications are disabled; use the app inbox.");
+          setNotificationStatus("Live inbox refresh is active; system push is disabled for this APK.");
           return;
         }
         setNotificationStatus("System notifications enabled.");
         return api.registerDevice(pushToken, Platform.OS === "ios" ? "ios" : "android");
       })
-      .catch((error: Error) => setNotificationStatus(`Notifications unavailable: ${error.message}`));
+      .catch((error: Error) => {
+        console.warn("System notifications unavailable:", error.message);
+        setNotificationStatus("Live inbox refresh is active; system push is not configured for this APK.");
+      });
     const unsubscribe = onNotificationOpened((data) => {
       void api.inbox().then((latest) => {
         setInbox(latest);
@@ -145,7 +172,7 @@ export default function App() {
     try {
       const result = await requestMagicLink(API_BASE, email);
       setLoginToken(result.token);
-      setAuthMessage("Demo magic link ready. Tap Continue to sign in.");
+      setAuthMessage("One-time sign-in token ready. Tap Continue to sign in.");
     } catch (error) {
       Alert.alert("Could not send magic link", (error as Error).message);
     }
@@ -233,7 +260,7 @@ export default function App() {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.shell}>
-          <Text style={styles.eyebrow}>BEAR WITH ME</Text>
+          <Text style={styles.eyebrow}>WHOOPS TAG</Text>
           <Text style={styles.title}>Keep your things findable.</Text>
           <Text style={styles.muted}>Private owner access for your recovery inbox.</Text>
           <View style={styles.authTabs}>
@@ -268,6 +295,7 @@ export default function App() {
     <SafeAreaView style={styles.safe}>
       <FlatList
         contentContainerStyle={styles.shell}
+        keyboardShouldPersistTaps="handled"
         data={items}
         keyExtractor={(item) => item.item_ref}
         ListHeaderComponent={

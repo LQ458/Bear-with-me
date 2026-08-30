@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Bear With Me",
-    "slug": "bear-with-me-owner",
+    "name": "Whoops Tag",
+    "slug": "whoops-tag-owner",
     "version": "0.1.0",
     "orientation": "portrait",
     "scheme": "bearwithme",
@@ -10,7 +10,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.bearwithme.owner",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Bear With Me uses the microphone only during an owner-approved return call."
+        "NSMicrophoneUsageDescription": "Whoops Tag uses the microphone only during an owner-approved return call."
       }
     },
     "android": {

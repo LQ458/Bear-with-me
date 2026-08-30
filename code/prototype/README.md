@@ -1,4 +1,4 @@
-# Bear With Me — one-day lost-property prototype
+# Whoops Tag — one-day lost-property prototype
 
 Tap an NFC tag on a lost item → the owner is told where it is. The finder needs no
 app and no account, and never learns who the owner is.
@@ -17,7 +17,7 @@ machine's LAN address rather than `localhost`, because **a tag encoding
 `localhost` is useless — the finder's phone cannot resolve it**:
 
 ```
-  Bear With Me running:  http://10.0.0.42:8000
+  Whoops Tag running:  http://10.0.0.42:8000
 ```
 
 Any phone on the same wi-fi can now scan a printed label and reach it.

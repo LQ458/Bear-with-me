@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bear With Me - a one-day lost-property reunification prototype.
+"""Whoops Tag - a one-day lost-property reunification prototype.
 
     python3 app.py                      # http://localhost:8000
     BASE_URL=https://xyz.ngrok.app python3 app.py
@@ -302,8 +302,8 @@ class App(BaseHTTPRequestHandler):
                 f"<span class=muted>{t['code']} &middot; {who}</span></div>"
                 f"<a href='{link}'>open</a></div>")
         listing = "".join(rows) or "<p class=muted>No tags yet.</p>"
-        self.send(page("Bear With Me admin", f"""
-        <h1>Bear With Me</h1>
+        self.send(page("Whoops Tag admin", f"""
+        <h1>Whoops Tag</h1>
         <p class=muted>Write the tag URL to an NFC sticker, or
         <a href="/labels">print QR labels</a> if you have no tags. Then claim it.</p>
         <div class=card>
@@ -440,7 +440,7 @@ class App(BaseHTTPRequestHandler):
             + f"<span class=muted>{pretty(s['created_at'])}</span></li>"
             for s in seen) or "<li class=muted>Nothing yet. Waiting.</li>"
         url = f"{BASE_URL}/i/{tag['code']}"
-        self.send(page(f"{tag['label'] or 'Item'} - Bear With Me", f"""
+        self.send(page(f"{tag['label'] or 'Item'} - Whoops Tag", f"""
         <h1>{escape(tag['label'] or 'Your item')}</h1>
         <p class=muted>Tag <code>{tag['code']}</code> &middot; keep this page open
         during the demo.</p>
@@ -619,7 +619,7 @@ def main() -> None:
     init_db()
     srv = ThreadingHTTPServer(("0.0.0.0", PORT), App)
     srv.daemon_threads = True
-    print(f"\n  Bear With Me running:  {BASE_URL}")
+    print(f"\n  Whoops Tag running:  {BASE_URL}")
     print(f"  Admin:            {BASE_URL}/")
     print(f"  Webhook: {'on' if WEBHOOK_URL else 'off'}   "
           f"Email: {'on' if RESEND_API_KEY else 'off'}\n")

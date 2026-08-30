@@ -85,7 +85,7 @@ class NotificationService:
 
     def notify_found(self, report: FoundReport) -> list[PushResult]:
         payload = {
-            "title": "Bear With Me",
+            "title": "Whoops Tag",
             "body": "Someone reported your item found.",
             "data": {
                 "found_ref": report.found_ref,

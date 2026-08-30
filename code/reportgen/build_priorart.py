@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Bear With Me prior-art and competitive landscape report.
+"""Build the Whoops Tag prior-art and competitive landscape report.
 
     python3 research/build_priorart.py  ->  research/prior-art.html
 

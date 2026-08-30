@@ -1,1 +1,1 @@
-"""Bear With Me application source package."""
+"""Whoops Tag application source package."""

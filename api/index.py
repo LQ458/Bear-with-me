@@ -1,4 +1,4 @@
-"""Vercel entrypoint for the Bear With Me API."""
+"""Vercel entrypoint for the Whoops Tag API."""
 
 from code.mvp.api import create_app
 from code.mvp.config import Settings

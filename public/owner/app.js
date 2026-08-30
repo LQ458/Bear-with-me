@@ -173,7 +173,7 @@ async function showDashboard() {
   byId("login").classList.add("hidden");
   await loadDashboard();
   startPolling();
-  status("Owner browser fallback is ready. The native app uses the same account and API.");
+  status("Owner web access is connected to the live account service. The native app uses the same API.");
 }
 
 function setAuthMode(mode) {
@@ -223,7 +223,7 @@ byId("request-login").addEventListener("click", async () => {
     if (!response.ok || !body.token) throw new Error(body.error || "Could not send magic link");
     byId("magic-token").value = body.token;
     byId("login-step").classList.remove("hidden");
-    status("Demo magic link ready. Continue to open the owner account.");
+    status("One-time sign-in token ready. Continue to open the owner account.");
   } catch (error) {
     status(error.message, true);
   } finally {
@@ -325,7 +325,23 @@ byId("logout").addEventListener("click", () => {
   status("Owner session closed.");
 });
 
-if (token) {
+const demoMode = new URLSearchParams(window.location.search).get("mode") === "demo";
+
+async function startDemo() {
+  const response = await fetch("/api/demo/bootstrap");
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || !body.session_token) throw new Error(body.error || "Could not start the live demo");
+  token = body.session_token;
+  sessionStorage.setItem("owner_session", token);
+  await showDashboard();
+}
+
+if (demoMode) {
+  startDemo().catch((error) => {
+    showLogin();
+    status(error.message, true);
+  });
+} else if (token) {
   showDashboard().catch((error) => {
     token = "";
     sessionStorage.removeItem("owner_session");

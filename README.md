@@ -1,4 +1,4 @@
-# Bear With Me
+# Whoops Tag
 
 Lost-property reunification for university campuses. A cheap passive label on an
 ordinary item; a finder taps or scans it with no app; the owner is notified;
@@ -559,7 +559,7 @@ transmitting the scanning device's location. **Claim 7** specifies GPS and IP.
 **1. Claims 1 and 9 require an owner nickname printed on the tag.** Both say the
 tag *"displays both the owner nickname and a visual code"*, and that the
 nickname be *"recognizable by persons familiar with the property owner."*
-Bear With Me's label carries a code and nothing else — deliberately, because the
+Whoops Tag's label carries a code and nothing else — deliberately, because the
 entire point is that the finder learns nothing. **A tag with no nickname does
 not appear to practise claim 1**, and since claim 3's anonymity limitation hangs
 off claim 1, the anonymity claim carries the nickname requirement with it.
@@ -682,7 +682,7 @@ textbook obviousness problem is not a bet — it is a donation.**
 
 | Tool | Protects | Cost |
 |---|---|---|
-| **Trademark** | The name *Bear With Me* as a brand | $350 per class |
+| **Trademark** | The name *Whoops Tag* as a brand | $350 per class |
 | **Copyright** | Your actual code, automatically on writing it | free; register to sue |
 | **Trade secret** | Implementation, anti-abuse rules — only while secret | free |
 | **Campus contracts** | The relationship and the integration | time |
@@ -768,7 +768,7 @@ already reachable from a phone on the same network:
 
 ```
 python3 code/prototype/app.py
-#   Bear With Me running:  http://192.0.2.17:8000     <- your LAN address
+#   Whoops Tag running:  http://192.0.2.17:8000
 ```
 
 That address changes with the network. The server prints the live one on start;

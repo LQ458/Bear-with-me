@@ -1,4 +1,4 @@
-# Bear With Me MVP backend
+# Whoops Tag backend
 
 This package is the product backend foundation; `code/prototype/` remains the
 one-day demo and is intentionally not imported here.

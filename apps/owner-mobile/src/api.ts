@@ -28,6 +28,7 @@ export type Message = {
 
 export type TagProvisioning = { tag_ref: string; item_ref: string; secret: string; human_code: string; finder_url: string };
 export type CallToken = { server_url: string; room: string; token: string };
+export type DemoBootstrap = { session_token: string; item_ref: string; label: string; finder_url: string };
 
 type Config = { baseUrl: string; sessionToken: string };
 
@@ -130,4 +131,16 @@ export async function consumeMagicLink(baseUrl: string, token: string): Promise<
   const body = (await response.json().catch(() => ({}))) as { session_token?: string; error?: string };
   if (!response.ok || !body.session_token) throw new Error(body.error || "Could not sign in");
   return { token: body.session_token };
+}
+
+export async function bootstrapDemo(baseUrl: string): Promise<DemoBootstrap> {
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/api/demo/bootstrap`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+  });
+  const body = (await response.json().catch(() => ({}))) as DemoBootstrap & { error?: string };
+  if (!response.ok || !body.session_token || !body.finder_url) {
+    throw new Error(body.error || "Could not start the demo");
+  }
+  return body;
 }
