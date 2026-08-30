@@ -164,7 +164,7 @@ def test_recording_bootstrap_is_idempotent_and_uses_the_real_return_loop(service
     assert items.status_code == 200
     assert any(item["item_ref"] == first_body["item_ref"] for item in items.json()["items"])
 
-    finder = client.get("/api/f/whoopstag-blue-water-bottle-2026")
+    finder = client.get("/api/f/wt_7YpK2mQ9xV4rN8cL5hD3sF6aJ0uB")
     assert finder.status_code == 200
     assert finder.json()["label"] == "Blue water bottle"
 

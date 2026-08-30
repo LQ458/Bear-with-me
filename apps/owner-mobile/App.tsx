@@ -69,17 +69,23 @@ export default function App() {
     void SecureStore.getItemAsync("owner_session")
       .then(async (stored) => {
         if (stored) {
+          const savedLinks = await SecureStore.getItemAsync("recording_links");
+          if (savedLinks) {
+            const recording = await bootstrapRecording(API_BASE);
+            if (!active) return;
+            const links = Object.fromEntries(recording.items.map((item) => [item.item_ref, item.finder_url]));
+            await SecureStore.setItemAsync("owner_session", recording.session_token);
+            await SecureStore.setItemAsync("recording_links", JSON.stringify(links));
+            setTagLinks(links);
+            setSession(recording.session_token);
+            return;
+          }
           try {
             await new OwnerApi({ baseUrl: API_BASE, sessionToken: stored }).listItems();
-            const savedLinks = await SecureStore.getItemAsync("recording_links");
-            if (active) {
-              if (savedLinks) setTagLinks(JSON.parse(savedLinks) as Record<string, string>);
-              setSession(stored);
-            }
+            if (active) setSession(stored);
             return;
           } catch {
             await SecureStore.deleteItemAsync("owner_session");
-            await SecureStore.deleteItemAsync("recording_links");
           }
         }
         const recording = await bootstrapRecording(API_BASE);
