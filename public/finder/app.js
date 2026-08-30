@@ -1,5 +1,5 @@
 const API = "/api";
-const state = { session: "", conversation: "", lastMessage: "", timer: null };
+const state = { session: "", conversation: "", lastMessage: "", timer: null, refreshing: false, sending: false, messageRefs: new Set() };
 const $ = (id) => document.getElementById(id);
 
 function setStatus(message, error = false) {
@@ -29,6 +29,8 @@ async function json(url, options = {}) {
 }
 
 function addMessage(message) {
+  if (state.messageRefs.has(message.message_ref)) return;
+  state.messageRefs.add(message.message_ref);
   const li = document.createElement("li");
   const sender = document.createElement("strong");
   sender.textContent = message.sender_role === "finder" ? "You" : "Owner";
@@ -39,32 +41,45 @@ function addMessage(message) {
 }
 
 async function refreshMessages() {
-  if (!state.conversation) return;
-  const body = await json(`/finder/conversations/${encodeURIComponent(state.conversation)}/messages?after=${encodeURIComponent(state.lastMessage)}`, {
-    headers: { "X-Finder-Session": state.session },
-  });
-  for (const message of body.messages) {
-    addMessage(message);
-    state.lastMessage = message.created_at;
+  if (!state.conversation || state.refreshing) return;
+  state.refreshing = true;
+  try {
+    const body = await json(`/finder/conversations/${encodeURIComponent(state.conversation)}/messages?after=${encodeURIComponent(state.lastMessage)}`, {
+      headers: { "X-Finder-Session": state.session },
+    });
+    for (const message of body.messages) {
+      addMessage(message);
+      state.lastMessage = message.created_at;
+    }
+  } finally {
+    state.refreshing = false;
   }
 }
-
 function bindChat() {
   if ($("message-form").dataset.bound) return;
   $("message-form").dataset.bound = "true";
   $("message-form").addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (state.sending || !state.conversation) return;
     const input = $("message");
+    const button = event.submitter || $("message-form").querySelector("button");
+    if (!input.value.trim()) return;
+    state.sending = true;
+    button.disabled = true;
     try {
-      await json(`/finder/conversations/${encodeURIComponent(state.conversation)}/messages`, {
+      const message = await json(`/finder/conversations/${encodeURIComponent(state.conversation)}/messages`, {
         method: "POST",
         headers: { "X-Finder-Session": state.session },
         body: JSON.stringify({ body: input.value }),
       });
       input.value = "";
-      await refreshMessages();
+      addMessage(message);
+      state.lastMessage = message.created_at;
     } catch (error) {
       setStatus(error.message, true);
+    } finally {
+      state.sending = false;
+      button.disabled = false;
     }
   });
 }

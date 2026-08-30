@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Button, FlatList, Platform, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, FlatList, Platform, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import { CallRoom } from "./src/CallRoom";
@@ -10,6 +10,31 @@ const API_BASE =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   Constants.expoConfig?.extra?.apiBaseUrl ??
   "http://localhost:8000";
+
+type ActionButtonProps = {
+  title: string;
+  onPress: () => void;
+  tone?: "dark" | "quiet";
+  disabled?: boolean;
+};
+
+function ActionButton({ title, onPress, tone = "dark", disabled = false }: ActionButtonProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.actionButton,
+        tone === "quiet" && styles.quietButton,
+        pressed && styles.actionButtonPressed,
+        disabled && styles.actionButtonDisabled,
+      ]}
+    >
+      <Text style={[styles.actionButtonText, tone === "quiet" && styles.quietButtonText]}>{title}</Text>
+    </Pressable>
+  );
+}
 
 type AuthMode = "register" | "login";
 
@@ -23,6 +48,9 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const lastMessage = useRef("");
+  const loadingMessages = useRef(false);
+  const messageRefs = useRef<Set<string>>(new Set());
+  const sendingMessage = useRef(false);
   const [newLabel, setNewLabel] = useState("");
   const [call, setCall] = useState<{ server_url: string; token: string } | null>(null);
   const [tagCodes, setTagCodes] = useState<Record<string, string>>({});
@@ -79,11 +107,20 @@ export default function App() {
     if (!api || !selected) return;
     let active = true;
     lastMessage.current = "";
+    messageRefs.current.clear();
     const load = async () => {
-      const next = await api.messages(selected.conversation_ref, lastMessage.current);
-      if (active && next.length) {
-        lastMessage.current = next.at(-1)?.created_at ?? lastMessage.current;
-        setMessages((current) => [...current, ...next]);
+      if (loadingMessages.current) return;
+      loadingMessages.current = true;
+      try {
+        const next = await api.messages(selected.conversation_ref, lastMessage.current);
+        if (active && next.length) {
+          lastMessage.current = next.at(-1)?.created_at ?? lastMessage.current;
+          const unseen = next.filter((message) => !messageRefs.current.has(message.message_ref));
+          unseen.forEach((message) => messageRefs.current.add(message.message_ref));
+          if (unseen.length) setMessages((current) => [...current, ...unseen]);
+        }
+      } finally {
+        loadingMessages.current = false;
       }
     };
     void load().catch(() => undefined);
@@ -138,14 +175,18 @@ export default function App() {
   }
 
   async function send() {
-    if (!api || !selected || !newMessage.trim()) return;
+    if (!api || !selected || !newMessage.trim() || sendingMessage.current) return;
+    sendingMessage.current = true;
     try {
       const message = await api.sendMessage(selected.conversation_ref, newMessage.trim());
       lastMessage.current = message.created_at;
+      messageRefs.current.add(message.message_ref);
       setMessages((current) => [...current, message]);
       setNewMessage("");
     } catch (error) {
       Alert.alert("Could not send message", (error as Error).message);
+    } finally {
+      sendingMessage.current = false;
     }
   }
 
@@ -180,24 +221,24 @@ export default function App() {
           <Text style={styles.title}>Keep your things findable.</Text>
           <Text style={styles.muted}>Private owner access for your recovery inbox.</Text>
           <View style={styles.authTabs}>
-            <Button title="Register" onPress={() => { setAuthMode("register"); setAuthMessage(""); }} />
-            <Button title="Log in" onPress={() => { setAuthMode("login"); setAuthMessage(""); }} />
+              <ActionButton title="Register" tone={authMode === "register" ? "dark" : "quiet"} onPress={() => { setAuthMode("register"); setAuthMessage(""); }} />
+              <ActionButton title="Log in" tone={authMode === "login" ? "dark" : "quiet"} onPress={() => { setAuthMode("login"); setAuthMessage(""); }} />
           </View>
           {authMode === "register" ? (
             <>
               <TextInput style={styles.input} placeholder="Your name" value={name} onChangeText={setName} />
               <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
-              <Button title="Create owner account" onPress={() => void signUp()} />
+              <ActionButton title="Create owner account" onPress={() => void signUp()} />
             </>
           ) : (
             <>
               <TextInput style={styles.input} placeholder="Email" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
-              <Button title="Send magic link" onPress={() => void requestLogin()} />
+              <ActionButton title="Send magic link" onPress={() => void requestLogin()} />
               {authMessage ? <Text style={styles.muted}>{authMessage}</Text> : null}
               {loginToken ? (
                 <>
                   <TextInput style={styles.input} placeholder="Magic link token" autoCapitalize="none" value={loginToken} onChangeText={setLoginToken} />
-                  <Button title="Continue to owner account" onPress={() => void finishLogin()} />
+                  <ActionButton title="Continue to owner account" onPress={() => void finishLogin()} />
                 </>
               ) : null}
             </>
@@ -225,7 +266,7 @@ export default function App() {
                 value={newLabel}
                 onChangeText={setNewLabel}
               />
-              <Button title="Add" onPress={() => void addItem()} />
+              <ActionButton title="Add" onPress={() => void addItem()} />
             </View>
             <Text style={styles.section}>Found reports</Text>
             {inbox.map((event) => (
@@ -234,7 +275,7 @@ export default function App() {
                 <Text style={styles.muted}>
                   {event.place}{event.note ? ` — ${event.note}` : ""}
                 </Text>
-                <Button
+                <ActionButton
                   title="Open anonymous chat"
                   onPress={() => {
                     setSelected(event);
@@ -258,8 +299,8 @@ export default function App() {
                   onChangeText={setNewMessage}
                 />
                 <View style={styles.row}>
-                  <Button title="Send" onPress={() => void send()} />
-                  <Button title="Call" onPress={() => void startCall()} />
+                  <ActionButton title="Send" onPress={() => void send()} />
+                  <ActionButton title="Call" tone="quiet" onPress={() => void startCall()} />
                 </View>
               </View>
             )}
@@ -273,7 +314,7 @@ export default function App() {
             {tagCodes[item.item_ref] && (
               <Text style={styles.code}>Short code: {tagCodes[item.item_ref]}</Text>
             )}
-            <Button
+            <ActionButton
               title="Provision NFC / QR tag"
               onPress={() => void provisionTag(item.item_ref)}
             />
@@ -285,18 +326,24 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#eef3f7" },
-  shell: { width: "100%", maxWidth: 720, alignSelf: "center", padding: 22, gap: 12 },
-  authTabs: { flexDirection: "row", gap: 8, marginVertical: 8 },
-  eyebrow: { color: "#2f5d9e", fontWeight: "700", letterSpacing: 2 },
-  title: { fontSize: 31, fontWeight: "800", color: "#15202b" },
-  section: { fontSize: 20, fontWeight: "700", color: "#15202b", marginTop: 18 },
-  muted: { color: "#5e6b78", lineHeight: 21 },
-  input: { backgroundColor: "white", borderColor: "#b8c5d1", borderWidth: 1, borderRadius: 9, padding: 12, marginVertical: 6 },
-  flex: { flex: 1 },
+  safe: { flex: 1, backgroundColor: "#f3f1ec" },
+  shell: { width: "100%", maxWidth: 720, alignSelf: "center", padding: 24, gap: 12 },
+  authTabs: { flexDirection: "row", gap: 8, marginVertical: 12 },
+  eyebrow: { color: "#b24b2b", fontWeight: "700", letterSpacing: 2.5, fontSize: 12 },
+  title: { fontFamily: "Georgia", fontSize: 40, fontWeight: "400", lineHeight: 44, color: "#171716", marginVertical: 4 },
+  section: { fontFamily: "Georgia", fontSize: 24, fontWeight: "400", color: "#171716", marginTop: 22 },
+  muted: { color: "#6b6a64", lineHeight: 22 },
+  input: { backgroundColor: "#fbfaf7", color: "#171716", borderColor: "#c7c3ba", borderWidth: 1, borderRadius: 11, padding: 13, marginVertical: 6 },
+  flex: { flex: 1, minWidth: 0 },
   row: { flexDirection: "row", alignItems: "center", gap: 8 },
-  card: { backgroundColor: "white", borderRadius: 12, padding: 15, marginVertical: 5, gap: 5 },
-  cardTitle: { fontSize: 17, fontWeight: "700" },
-  message: { backgroundColor: "#f1f5f8", padding: 8, borderRadius: 8 },
-  code: { color: "#2f5d9e", fontWeight: "700", letterSpacing: 1.5 },
+  card: { backgroundColor: "#fbfaf7", borderColor: "#d9d4ca", borderWidth: 1, borderRadius: 18, padding: 18, marginVertical: 6, gap: 8, shadowColor: "#171716", shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  cardTitle: { fontFamily: "Georgia", fontSize: 21, fontWeight: "400", color: "#171716" },
+  message: { backgroundColor: "#eeece6", color: "#171716", padding: 10, borderRadius: 11 },
+  code: { color: "#b24b2b", fontWeight: "700", letterSpacing: 1.5 },
+  actionButton: { backgroundColor: "#171716", borderRadius: 999, paddingHorizontal: 16, paddingVertical: 12, alignItems: "center", justifyContent: "center" },
+  quietButton: { backgroundColor: "transparent", borderColor: "#c7c3ba", borderWidth: 1 },
+  actionButtonText: { color: "#fbfaf7", fontWeight: "700" },
+  quietButtonText: { color: "#171716" },
+  actionButtonPressed: { opacity: 0.78 },
+  actionButtonDisabled: { opacity: 0.45 },
 });

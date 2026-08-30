@@ -3,6 +3,9 @@ let selected = null;
 let lastMessage = "";
 let inboxTimer = null;
 let messageTimer = null;
+let refreshingMessages = false;
+let sendingMessage = false;
+const messageRefs = new Set();
 const byId = (id) => document.getElementById(id);
 
 function status(text, error = false) {
@@ -109,6 +112,7 @@ async function loadDashboard() {
 async function openChat(event) {
   selected = event;
   lastMessage = "";
+  messageRefs.clear();
   byId("chat-title").textContent = `Chat about ${event.label}`;
   byId("chat").classList.remove("hidden");
   byId("messages").replaceChildren();
@@ -118,18 +122,31 @@ async function openChat(event) {
   messageTimer = window.setInterval(() => pollMessages().catch((error) => status(error.message, true)), 2500);
 }
 
+function addMessage(message) {
+  if (messageRefs.has(message.message_ref)) return;
+  messageRefs.add(message.message_ref);
+  const line = document.createElement("li");
+  const sender = document.createElement("strong");
+  sender.textContent = message.sender_role;
+  const text = document.createElement("span");
+  text.textContent = message.body;
+  line.append(sender, text);
+  byId("messages").append(line);
+}
+
 async function pollMessages() {
-  if (!selected) return;
-  const body = await api(`/owner/conversations/${encodeURIComponent(selected.conversation_ref)}/messages?after=${encodeURIComponent(lastMessage)}`);
-  for (const message of body.messages) {
-    const line = document.createElement("li");
-    const sender = document.createElement("strong");
-    sender.textContent = message.sender_role;
-    const text = document.createElement("span");
-    text.textContent = message.body;
-    line.append(sender, text);
-    byId("messages").append(line);
-    lastMessage = message.created_at;
+  const conversation = selected;
+  if (!conversation || refreshingMessages) return;
+  refreshingMessages = true;
+  try {
+    const body = await api(`/owner/conversations/${encodeURIComponent(conversation.conversation_ref)}/messages?after=${encodeURIComponent(lastMessage)}`);
+    if (!selected || selected.conversation_ref !== conversation.conversation_ref) return;
+    for (const message of body.messages) {
+      addMessage(message);
+      lastMessage = message.created_at;
+    }
+  } finally {
+    refreshingMessages = false;
   }
 }
 
@@ -251,18 +268,25 @@ byId("item-form").addEventListener("submit", async (event) => {
 
 byId("message-form").addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!selected) return;
+  if (!selected || sendingMessage) return;
   const input = byId("message");
+  if (!input.value.trim()) return;
+  const button = event.submitter || byId("message-form").querySelector("button");
+  sendingMessage = true;
+  button.disabled = true;
   try {
     const message = await api(`/owner/conversations/${encodeURIComponent(selected.conversation_ref)}/messages`, {
       method: "POST",
       body: JSON.stringify({ body: input.value }),
     });
     input.value = "";
+    addMessage(message);
     lastMessage = message.created_at;
-    await pollMessages();
   } catch (error) {
     status(error.message, true);
+  } finally {
+    sendingMessage = false;
+    button.disabled = false;
   }
 });
 
