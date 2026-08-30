@@ -60,7 +60,7 @@ async function provisionTag(item, button, result) {
     const tag = await api(`/items/${encodeURIComponent(item.item_ref)}/tags`, { method: "POST" });
     result.replaceChildren();
     result.className = "muted";
-    result.append(`Short code: ${tag.human_code} · `);
+    result.append("Tag ready · ");
     const link = document.createElement("a");
     link.href = tag.finder_url;
     link.target = "_blank";

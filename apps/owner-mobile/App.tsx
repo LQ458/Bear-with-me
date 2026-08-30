@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, FlatList, Platform, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, FlatList, Platform, Pressable, SafeAreaView, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
 import { CallRoom } from "./src/CallRoom";
@@ -53,7 +53,7 @@ export default function App() {
   const sendingMessage = useRef(false);
   const [newLabel, setNewLabel] = useState("");
   const [call, setCall] = useState<{ server_url: string; token: string } | null>(null);
-  const [tagCodes, setTagCodes] = useState<Record<string, string>>({});
+  const [tagLinks, setTagLinks] = useState<Record<string, string>>({});
   const [ready, setReady] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("register");
   const [loginToken, setLoginToken] = useState("");
@@ -199,12 +199,28 @@ export default function App() {
       Alert.alert("Calling is unavailable", (error as Error).message);
     }
   }
+  async function shareTagUrl(url: string) {
+    try {
+      await Share.share({ message: url });
+    } catch (error) {
+      Alert.alert("Could not share tag link", (error as Error).message);
+    }
+  }
+
+  async function shareTagLink(itemRef: string) {
+    const url = tagLinks[itemRef];
+    if (url) await shareTagUrl(url);
+  }
+
   async function provisionTag(itemRef: string) {
     if (!api) return;
     try {
       const tag = await api.provisionTag(itemRef);
-      setTagCodes((current) => ({ ...current, [itemRef]: tag.human_code }));
-      Alert.alert("Tag ready", `Short code: ${tag.human_code}\nWrite the NFC URL or print the QR label.`);
+      setTagLinks((current) => ({ ...current, [itemRef]: tag.finder_url }));
+      Alert.alert("Tag ready", "Share the tag link to print a QR label or write the NFC tag.", [
+        { text: "Share tag link", onPress: () => void shareTagUrl(tag.finder_url) },
+        { text: "Done", style: "cancel" },
+      ]);
     } catch (error) {
       Alert.alert("Could not provision tag", (error as Error).message);
     }
@@ -311,8 +327,15 @@ export default function App() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{item.label}</Text>
             <Text style={styles.muted}>{item.status}</Text>
-            {tagCodes[item.item_ref] && (
-              <Text style={styles.code}>Short code: {tagCodes[item.item_ref]}</Text>
+            {tagLinks[item.item_ref] && (
+              <>
+                <Text style={styles.muted}>Tag ready for NFC / QR.</Text>
+                <ActionButton
+                  title="Share tag link"
+                  tone="quiet"
+                  onPress={() => void shareTagLink(item.item_ref)}
+                />
+              </>
             )}
             <ActionButton
               title="Provision NFC / QR tag"
@@ -339,7 +362,6 @@ const styles = StyleSheet.create({
   card: { backgroundColor: "#fbfaf7", borderColor: "#d9d4ca", borderWidth: 1, borderRadius: 18, padding: 18, marginVertical: 6, gap: 8, shadowColor: "#171716", shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   cardTitle: { fontFamily: "Georgia", fontSize: 21, fontWeight: "400", color: "#171716" },
   message: { backgroundColor: "#eeece6", color: "#171716", padding: 10, borderRadius: 11 },
-  code: { color: "#b24b2b", fontWeight: "700", letterSpacing: 1.5 },
   actionButton: { backgroundColor: "#171716", borderRadius: 999, paddingHorizontal: 16, paddingVertical: 12, alignItems: "center", justifyContent: "center" },
   quietButton: { backgroundColor: "transparent", borderColor: "#c7c3ba", borderWidth: 1 },
   actionButtonText: { color: "#fbfaf7", fontWeight: "700" },
