@@ -220,6 +220,7 @@ button:disabled { cursor: wait; opacity: .55; transform: none; }
   .lede { font-size: 1.12rem; }
   .hero { grid-template-columns: 1fr; padding: 78px 0 68px; }
   .hero-art { min-height: 390px; }
+  .orbit { inset: 5% 8% 4%; transform: rotate(-13deg); }
   .tag-card { right: 0; width: min(92%, 390px); padding: 30px; }
   .tag-card strong { margin-top: 42px; font-size: clamp(2.8rem, 15vw, 4.3rem); }
   .trust-strip, .portal-grid { grid-template-columns: 1fr; }
