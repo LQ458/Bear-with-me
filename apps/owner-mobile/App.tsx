@@ -9,7 +9,7 @@ import { onNotificationOpened, registerForOwnerNotifications } from "./src/notif
 const API_BASE =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   Constants.expoConfig?.extra?.apiBaseUrl ??
-  "https://bear-with-me-five.vercel.app";
+  "https://whoops-tag.vercel.app";
 
 type ActionButtonProps = {
   title: string;
